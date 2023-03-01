@@ -1,11 +1,17 @@
 # Particle Bridge
 
-Subscribes to particle events and emits WLED events.  For controlling WLED nodes with a particle (arduino) controller.  Also, to aid in the transition from a bunch of particle LED nodes to a more standard WLED-based system.
+Subscribes to particle events and emits Pixelblaze events.  For controlling one Pixelblaze node with a particle (arduino) controller.  Also, to aid in the transition from a bunch of particle LED nodes to a more standard WLED-based system.
+
+
+## TODO
+
+- Control many pixelblaze nodes and not just one
+- Unhardcode the particle pubsub topic
 
 
 ## Setup
 
-I can't imagine anyone would need this but me but this is a Rust project so you should download a release if there is one matching your platform.
+I can't imagine anyone would need this except me but here's how you set it up.  This is a Rust project so you should download a release if there is one matching your platform.
 
 For now the instructions are TBD except for the normal `cargo` commands.
 

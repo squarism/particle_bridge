@@ -52,9 +52,8 @@ pub async fn events(token: String) {
         match topic {
             None => {
                 // TODO: do nothing, this is just placeholder
-                print!(".");
+                // print!(".");
                 // io::stdout().flush().unwrap();
-                io::stdout().flush().unwrap();
             }
             Some(_topic) => {
                 let theme_message: ThemeData = serde_json::from_str(&data).unwrap();

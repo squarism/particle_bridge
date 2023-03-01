@@ -15,7 +15,12 @@ You need a [particle token](https://docs.particle.io/reference/cloud-apis/access
 # particle access token
 # https://docs.particle.io/reference/cloud-apis/access-tokens/
 TOKEN=xxx
+
+# the IP address of the pixelblaze as a websocket server
+PIXELBLAZE_HOST=ws://<ip>:81
 ```
+
+SSL on the pixelblaze is probably not setup, unknown but also support is not built in to this service.  So the protocol is `ws://`.
 
 
 ## License

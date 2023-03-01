@@ -1,0 +1,18 @@
+# an example systemd file for the particle-bridge service
+# a service which forwards particle.io events to a pixelblaze board (websocket)
+# so you can control your pixelblaze LEDs from a particle pubsub message
+# (particle.io is like an arduino cloud service)
+
+[Unit]
+Description=Particle Bridge
+After=network.target
+
+[Service]
+Type=simple
+User=particle-bridge
+WorkingDirectory=/opt/particle_bridge
+ExecStart=/opt/particle_bridge/particle_bridge
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

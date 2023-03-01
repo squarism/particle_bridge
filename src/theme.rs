@@ -1,5 +1,13 @@
 use serde_json::json;
 
+// TODO: all these themes need to go into a config file
+// the activeProgramId is completely arbitrary, when you load a theme
+// onto the pixelblaze, it generates an id
+// so these definitions should live on the filesystem or something
+
+// this file represents the translation of a theme (string) to an entire parameter set
+// sent to the pixelblaze.  These can be made in the pixelblaze UI and then queried through
+// the API.
 pub fn bluegreen(brightness: f32) -> String {
     json!({
         "brightness": brightness,

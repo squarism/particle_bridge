@@ -27,7 +27,7 @@ pub struct ThemeData {
     pub data: ThemeMessage,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ThemeMessage {
     pub theme: String,
     pub brightness: Option<u8>,
@@ -37,7 +37,7 @@ pub struct ThemeMessage {
 // data: {"data":"{\"theme\":\"off\"}","ttl":60,"published_at":"2023-02-17T23:11:26.574Z","coreid":"api"}
 // OR
 // "{\"data\":\"{\\\"brightness\\\":40,\\\"theme\\\":\\\"bluegreen\\\"}
-pub async fn events(token: String) {
+pub async fn events(token: String, pixelblaze_hosts: Vec<String>) {
     // TODO: unhardcode topic
     let s = format!("https://api.particle.io/v1/events/squarism%2Fblinkwon?access_token={token}");
     let url = reqwest::Url::parse(&s).unwrap();
@@ -57,7 +57,9 @@ pub async fn events(token: String) {
             }
             Some(_topic) => {
                 let theme_message: ThemeData = serde_json::from_str(&data).unwrap();
-                forward(theme_message.data).await;
+
+                // TODO: look at this middle-man
+                forward(theme_message.data, pixelblaze_hosts.clone()).await;
             }
         }
     }

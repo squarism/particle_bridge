@@ -1,24 +1,31 @@
 use futures_util::SinkExt;
 use futures_util::StreamExt;
-use std::env;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
+use url::Url;
 
 use crate::math::round;
 use crate::particle::ThemeMessage;
 use crate::theme;
 
-pub async fn forward(message: ThemeMessage) {
-    let pixelblaze_host = env::var("PIXELBLAZE_HOST").unwrap();
+pub async fn forward(message: ThemeMessage, pixelblaze_hosts: Vec<String>) {
+    let urls: Vec<Url> = pixelblaze_hosts
+        .iter()
+        .filter_map(|s| Url::parse(s).ok())
+        .collect();
 
-    let url = url::Url::parse(pixelblaze_host.as_str()).unwrap();
-    let (ws_stream, _) = connect_async(&url)
-        .await
-        .expect("Pixelblaze connect failed");
+    for url in urls.iter() {
+        send_message(url, message.clone()).await.unwrap();
+    }
+}
+
+// This function connects to the given URL and sends a message over the WebSocket.
+async fn send_message(url: &Url, message: ThemeMessage) -> Result<(), Box<dyn std::error::Error>> {
+    let (ws_stream, _) = tokio_tungstenite::connect_async(url).await?;
     let (mut write, mut read) = ws_stream.split();
 
     let pb_request = theme(message);
 
-    write.send(Message::Text(pb_request)).await.unwrap();
+    write.send(Message::Text(pb_request)).await?;
 
     while let Some(msg) = read.next().await {
         match msg {
@@ -34,6 +41,8 @@ pub async fn forward(message: ThemeMessage) {
         // it definitely sends `{"ack":1}`
         write.close().await.expect("Failed to disconnect");
     }
+
+    Ok(())
 }
 
 fn theme(message: ThemeMessage) -> String {

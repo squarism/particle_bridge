@@ -11,7 +11,7 @@ After=network.target
 Type=simple
 User=particle-bridge
 WorkingDirectory=/opt/particle_bridge
-ExecStart=/opt/particle_bridge/particle_bridge
+ExecStart=/opt/particle_bridge/particle_bridge --pixelblaze_host ws://change-this-ip:81
 Restart=on-failure
 
 [Install]

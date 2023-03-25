@@ -3,12 +3,6 @@
 Subscribes to particle events and emits Pixelblaze events.  For controlling one Pixelblaze node with a particle (arduino) controller.  Also, to aid in the transition from a bunch of particle LED nodes to a more standard WLED-based system.
 
 
-## TODO
-
-- Control many pixelblaze nodes and not just one
-- Unhardcode the particle pubsub topic
-
-
 ## Setup
 
 I can't imagine anyone would need this except me but here's how you set it up.  This is a Rust project so you should download a release if there is one matching your platform.
@@ -26,10 +20,10 @@ PARTICLE_TOKEN=xxx
 The invocation on the command line allows for one or multiple pixelblaze hosts:
 ```
 # forward to one pixelblaze
-particle_bridge --pixelblaze_host ws://10.0.0.1:81
+particle_bridge --topic my-lights --pixelblaze_host ws://10.0.0.1:81
 
 # forward to multiple pixelblazes
-particle_bridge --pixelblaze_host ws://10.0.0.1:81 --pixelblaze_host ws://10.0.0.42:81
+particle_bridge --topic my-lights --pixelblaze_host ws://10.0.0.1:81 --pixelblaze_host ws://10.0.0.42:81
 ```
 
 SSL on the pixelblaze is probably not setup, unknown but also support is not built in to this service.  So the protocol is `ws://`.

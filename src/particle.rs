@@ -33,13 +33,8 @@ pub struct ThemeMessage {
     pub brightness: Option<u8>,
 }
 
-// event: squarism/blinkwon
-// data: {"data":"{\"theme\":\"off\"}","ttl":60,"published_at":"2023-02-17T23:11:26.574Z","coreid":"api"}
-// OR
-// "{\"data\":\"{\\\"brightness\\\":40,\\\"theme\\\":\\\"bluegreen\\\"}
-pub async fn events(token: String, pixelblaze_hosts: Vec<String>) {
-    // TODO: unhardcode topic
-    let s = format!("https://api.particle.io/v1/events/squarism%2Fblinkwon?access_token={token}");
+pub async fn events(token: String, pixelblaze_hosts: Vec<String>, topic: String) {
+    let s = format!("https://api.particle.io/v1/events/{topic}?access_token={token}");
     let url = reqwest::Url::parse(&s).unwrap();
 
     let client = Client::new(url);

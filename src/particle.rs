@@ -1,8 +1,6 @@
 use eventsource::reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::io;
-use std::io::Write;
 
 use crate::pixelblaze::forward;
 

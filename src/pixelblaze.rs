@@ -1,6 +1,6 @@
 use futures_util::SinkExt;
 use futures_util::StreamExt;
-use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
+use tokio_tungstenite::tungstenite::protocol::Message;
 use url::Url;
 
 use crate::math::round;

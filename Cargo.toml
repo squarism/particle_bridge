@@ -3,8 +3,6 @@ name = "particle_bridge"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 reqwest = { version = "0.11.14", features = ["json"] }
 reqwest-eventsource = "0.4.0"
@@ -18,5 +16,7 @@ openssl = { version = "0.10", features = ["vendored"] }
 url = "2.3.1"
 futures-util = "0.3.26"
 clap = { version = "4.0", features = ["derive"] }
+config = "0.13.1"
+tera = { version = "1", default-features = false }
 
 [dev-dependencies]

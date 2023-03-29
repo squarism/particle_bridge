@@ -31,6 +31,15 @@ SSL on the pixelblaze is probably not setup, unknown but also support is not bui
 There's a systemd template if you want to run this as a service.
 
 
+## Config
+
+Themes are a list of themes across all boards.  Each board generates a unique ID when you upload a theme in the UI.  Upload a pixelblaze theme and then copy the parameters in themes.
+
+Pixelblazes are a list of hosts and the list of IDs of the themes. The assumption is that the pixelblazes have the same themes and want these to be sync'd up.
+
+There is an example in `config.example.json.tera` and the config file format is [Tera](https://tera.netlify.app/) because we have to substitute variables.
+
+
 ## License
 
 The MIT License (MIT)

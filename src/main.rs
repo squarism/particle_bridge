@@ -1,8 +1,11 @@
+extern crate tera;
+
 use dotenv::dotenv;
 
 use std::env;
 use std::io::Error;
 
+mod config;
 mod math;
 mod particle;
 mod pixelblaze;

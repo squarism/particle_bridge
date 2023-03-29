@@ -1,3 +1,4 @@
+#![allow(unused)]
 use serde_json::json;
 
 // TODO: all these themes need to go into a config file

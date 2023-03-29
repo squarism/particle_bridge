@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use futures_util::SinkExt;
 use futures_util::StreamExt;
 use tokio_tungstenite::tungstenite::protocol::Message;
@@ -5,7 +7,7 @@ use url::Url;
 
 use crate::math::round;
 use crate::particle::ThemeMessage;
-use crate::theme;
+// use crate::theme;
 
 pub async fn forward(message: ThemeMessage, pixelblaze_hosts: Vec<String>) {
     let urls: Vec<Url> = pixelblaze_hosts
@@ -67,14 +69,8 @@ fn theme(message: ThemeMessage) -> String {
         } => {
             // clamp brightness down, pixelblaze strip is brighter
             let brightness = round(brightness as f32 / 255.0, 3) * 0.80;
-
-            match theme.as_str() {
-                "bluegreen" => theme::bluegreen(brightness),
-                "orange" => theme::orange(brightness),
-                "blacklight" => theme::blacklight(brightness),
-                "white" => theme::white(brightness),
-                _ => panic!("bad message"),
-            }
+            // theme_definition(theme, brightness)
+            "yeah".to_owned()
         }
 
         _ => {
@@ -82,4 +78,16 @@ fn theme(message: ThemeMessage) -> String {
             "".to_owned()
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // #[test]
+    // fn test_theme_definition() {
+    //     let result = theme_definition("orange".to_owned(), 42.0);
+    //     let expected = "{\"activeProgramId\":\"K58J7fPWpqXjeoLsW\",\"brightness\":42.0,\"setVars\":{\"nCurrentLight\":0}}";
+    //     assert_eq!(result, expected);
+    // }
 }

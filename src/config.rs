@@ -35,7 +35,7 @@ impl Config {
         parsed_json["themes".to_owned()][theme].clone()
     }
 
-    fn hosts(&self, config_file: String) -> Value {
+    fn hosts(&self) -> Value {
         // make a dummy document because of the config file format
         // we need it to be populated with one section and then iterate through the other
         // but in doing so we've made a template in Tera that is unparsable until filled
@@ -46,7 +46,7 @@ impl Config {
         context.insert("brightness", &42);
         context.insert("id", &"dummy");
 
-        let config_template = fs::read_to_string(config_file).unwrap();
+        let config_template = fs::read_to_string(self.config_file.clone()).unwrap();
         let result = Tera::one_off(&config_template, &context, true).unwrap();
 
         let parsed_json: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -61,18 +61,16 @@ mod tests {
 
     #[test]
     fn test_config_file_path() {
-        let c = Config::new("config.json.tera".to_owned());
+        let c = Config::new("fixtures/config.json.tera".to_owned());
         let result = c.config_file;
-        let expected = "config.json.tera";
+        let expected = "fixtures/config.json.tera";
         assert_eq!(result, expected);
     }
 
     #[test]
     fn test_hosts() {
-        let c = Config {
-            config_file: "config.json.tera".to_owned(),
-        };
-        let result = c.hosts("config.json.tera".to_owned());
+        let c = Config::new("fixtures/config.json.tera".to_owned());
+        let result = c.hosts();
 
         let expected = json!([
             {
@@ -87,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_theme_definition() {
-        let c = Config::new("config.json.tera".to_owned());
+        let c = Config::new("fixtures/config.json.tera".to_owned());
         let result = c.theme_definition("bluegreen".to_owned(), 42, "some-id".to_owned());
 
         let expected = json!({

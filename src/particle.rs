@@ -45,11 +45,7 @@ pub async fn events(config: Config, token: String, topic: String) {
         let topic = &sse_event.event_type;
 
         match topic {
-            None => {
-                // TODO: do nothing, this is just placeholder
-                // print!(".");
-                // io::stdout().flush().unwrap();
-            }
+            None => (),
             Some(_topic) => {
                 let theme_message: ThemeData = serde_json::from_str(&data).unwrap();
 

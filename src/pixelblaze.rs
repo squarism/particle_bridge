@@ -40,7 +40,6 @@ async fn send_message(
     let (mut write, mut read) = ws_stream.split();
 
     let pixelblaze_message = theme(message.clone(), pixelblaze);
-    dbg!(&pixelblaze_message);
 
     match pixelblaze_message {
         Some(m) => write.send(Message::Text(m)).await?,

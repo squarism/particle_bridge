@@ -12,7 +12,7 @@ mod pixelblaze;
 use particle::events;
 
 use crate::config::Config;
-use clap::{ArgAction, Parser};
+use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -27,16 +27,6 @@ struct Cli {
         required(true)
     )]
     topic: String,
-
-    // TODO: not required - remove
-    #[arg(
-        long("pixelblaze_host"),
-        num_args(1..),
-        action(ArgAction::Append),
-        help("multiple values allowed to forward messages to many pixelblaze boards"),
-        required(true)
-    )]
-    pixelblaze_host: Vec<String>,
 }
 
 #[tokio::main]

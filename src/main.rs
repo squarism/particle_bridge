@@ -9,9 +9,9 @@ mod config;
 mod math;
 mod particle;
 mod pixelblaze;
-mod theme;
 use particle::events;
 
+use crate::config::Config;
 use clap::{ArgAction, Parser};
 
 #[derive(Parser, Debug)]
@@ -40,6 +40,8 @@ struct Cli {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    env_logger::init();
+
     dotenv().ok();
     let token =
         env::var("PARTICLE_TOKEN").expect("Please set PARTICLE_TOKEN to particle access token.");
@@ -48,8 +50,10 @@ async fn main() -> Result<(), Error> {
     // a particle event can go to many pixelblaze boards
     let args = Cli::parse();
 
+    let config = Config::new("config.json.tera".to_owned());
+
     // main loop of sorts
-    events(token, args.pixelblaze_host, args.topic).await;
+    events(config, token, args.topic).await;
 
     Ok(())
 }

@@ -1,31 +1,52 @@
-#![allow(dead_code, unused)]
-
 use futures_util::SinkExt;
 use futures_util::StreamExt;
+use serde_json::Value;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use url::Url;
 
+use crate::config::Config;
 use crate::math::round;
 use crate::particle::ThemeMessage;
-// use crate::theme;
 
-pub async fn forward(message: ThemeMessage, pixelblaze_hosts: Vec<String>) {
-    let urls: Vec<Url> = pixelblaze_hosts
-        .iter()
-        .filter_map(|s| Url::parse(s).ok())
-        .collect();
+use log::warn;
 
-    for url in urls.iter() {
-        send_message(url, message.clone()).await.unwrap();
+pub async fn forward(hosts: &[Value], message: ThemeMessage) {
+    for pixelblaze in hosts.iter() {
+        // TODO: this means that I need a config struct and not a bunch of serde JSON Values
+        let host = pixelblaze
+            .get("host")
+            .expect("host missing in pixelblaze section")
+            .as_str()
+            .unwrap();
+
+        // TODO: better error messages
+        let url = Url::parse(host).unwrap();
+        let themes = pixelblaze.get("themeIds").unwrap();
+        let theme_id = themes.get(&message.theme);
+
+        match theme_id {
+            Some(t) => {
+                let result = send_message(&url, t.as_str().unwrap(), message.clone()).await;
+                match result {
+                    Ok(_) => (),
+                    Err(_) => warn!("Could not send"),
+                }
+            }
+            None => warn!("I do not know what the theme `{}` is", message.theme),
+        }
     }
 }
 
 // This function connects to the given URL and sends a message over the WebSocket.
-async fn send_message(url: &Url, message: ThemeMessage) -> Result<(), Box<dyn std::error::Error>> {
+async fn send_message(
+    url: &Url,
+    theme_id: &str,
+    message: ThemeMessage,
+) -> Result<(), Box<dyn std::error::Error>> {
     let (ws_stream, _) = tokio_tungstenite::connect_async(url).await?;
     let (mut write, mut read) = ws_stream.split();
 
-    let pb_request = theme(message);
+    let pb_request = theme(message, theme_id);
 
     write.send(Message::Text(pb_request)).await?;
 
@@ -47,7 +68,7 @@ async fn send_message(url: &Url, message: ThemeMessage) -> Result<(), Box<dyn st
     Ok(())
 }
 
-fn theme(message: ThemeMessage) -> String {
+fn theme(message: ThemeMessage, theme_id: &str) -> String {
     match message {
         ThemeMessage {
             ref theme,
@@ -69,8 +90,12 @@ fn theme(message: ThemeMessage) -> String {
         } => {
             // clamp brightness down, pixelblaze strip is brighter
             let brightness = round(brightness as f32 / 255.0, 3) * 0.80;
-            // theme_definition(theme, brightness)
-            "yeah".to_owned()
+
+            // look up the config and populate the template with variables
+            let c = Config::new("config.json.tera".to_owned());
+            let result = c.theme_definition(theme, brightness, theme_id.to_owned());
+
+            result.to_string()
         }
 
         _ => {
@@ -80,14 +105,37 @@ fn theme(message: ThemeMessage) -> String {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use mockall::predicate::*;
+//     use mockall::*;
+//     use serde_json::json;
 
-    // #[test]
-    // fn test_theme_definition() {
-    //     let result = theme_definition("orange".to_owned(), 42.0);
-    //     let expected = "{\"activeProgramId\":\"K58J7fPWpqXjeoLsW\",\"brightness\":42.0,\"setVars\":{\"nCurrentLight\":0}}";
-    //     assert_eq!(result, expected);
-    // }
-}
+//     use super::*;
+
+//     #[tokio::test]
+//     async fn test_forward() {
+//         let host = json!("ws://1.2.3.4:81");
+//         let hosts = vec![host];
+
+//         let mut mock_send_message = Mocksend_message::new();
+//         mock_send_message
+//             .expect_call()
+//             .with(eq(url.clone()), eq(message.clone()))
+//             .times(1)
+//             .returning(|_, _| Ok(()));
+
+//         let message: ThemeMessage = ThemeMessage {
+//             theme: "test-theme".to_owned(),
+//             brightness: Some(42),
+//         };
+//         let tmp_hosts = vec!["no".to_owned()];
+//         let result = forward(&hosts, message, tmp_hosts).await;
+
+//         let expected = "no";
+
+//         //     let result = theme_definition("orange".to_owned(), 42.0);
+//         //     let expected = "{\"activeProgramId\":\"K58J7fPWpqXjeoLsW\",\"brightness\":42.0,\"setVars\":{\"nCurrentLight\":0}}";
+//         assert_eq!(result, expected);
+//     }
+// }

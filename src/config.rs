@@ -7,7 +7,7 @@ use std::io::BufReader;
 
 use tera::{Context, Tera};
 
-struct Config {
+pub struct Config {
     pub config_file: String,
 }
 
@@ -16,26 +16,21 @@ impl Config {
         Self { config_file }
     }
 
-    fn theme_definition(&self, theme: String, brightness: i32, id: String) -> Value {
-        // match theme.as_str() {
-        //     "bluegreen" => theme::bluegreen(brightness),
-        //     "orange" => theme::orange(brightness),
-        //     "blacklight" => theme::blacklight(brightness),
-        //     "white" => theme::white(brightness),
-        //     _ => panic!("unknown theme"),
-        // }
+    pub fn theme_definition(&self, theme: String, brightness: f32, id: String) -> Value {
         let mut context = Context::new();
         context.insert("brightness", &brightness);
         context.insert("id", &id);
 
-        let config_template = fs::read_to_string(self.config_file.clone()).unwrap();
+        let config_template = fs::read_to_string(self.config_file.clone())
+            .unwrap_or_else(|_| panic!("Config file {} not found", &self.config_file.as_str()));
+
         let result = Tera::one_off(&config_template, &context, true).unwrap();
 
         let parsed_json: Value = serde_json::from_str(result.as_str()).unwrap();
         parsed_json["themes".to_owned()][theme].clone()
     }
 
-    fn hosts(&self) -> Value {
+    pub fn hosts(&self) -> Value {
         // make a dummy document because of the config file format
         // we need it to be populated with one section and then iterate through the other
         // but in doing so we've made a template in Tera that is unparsable until filled
@@ -46,7 +41,9 @@ impl Config {
         context.insert("brightness", &42);
         context.insert("id", &"dummy");
 
-        let config_template = fs::read_to_string(self.config_file.clone()).unwrap();
+        let config_template = fs::read_to_string(self.config_file.clone())
+            .unwrap_or_else(|_| panic!("Config file {} not found", &self.config_file.as_str()));
+
         let result = Tera::one_off(&config_template, &context, true).unwrap();
 
         let parsed_json: Value = serde_json::from_str(result.as_str()).unwrap();
@@ -86,7 +83,7 @@ mod tests {
     #[test]
     fn test_theme_definition() {
         let c = Config::new("fixtures/config.json.tera".to_owned());
-        let result = c.theme_definition("bluegreen".to_owned(), 42, "some-id".to_owned());
+        let result = c.theme_definition("bluegreen".to_owned(), 0.42, "some-id".to_owned());
 
         let expected = json!({
             "brightness": 42,

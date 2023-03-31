@@ -2,6 +2,7 @@ use eventsource::reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::config::Config;
 use crate::pixelblaze::forward;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,12 +32,13 @@ pub struct ThemeMessage {
     pub brightness: Option<u8>,
 }
 
-pub async fn events(token: String, pixelblaze_hosts: Vec<String>, topic: String) {
+pub async fn events(config: Config, token: String, topic: String) {
     let s = format!("https://api.particle.io/v1/events/{topic}?access_token={token}");
     let url = reqwest::Url::parse(&s).unwrap();
 
     let client = Client::new(url);
 
+    // return client and move this to main
     for event in client {
         let sse_event = event.unwrap();
         let data = sse_event.data;
@@ -52,7 +54,10 @@ pub async fn events(token: String, pixelblaze_hosts: Vec<String>, topic: String)
                 let theme_message: ThemeData = serde_json::from_str(&data).unwrap();
 
                 // TODO: look at this middle-man
-                forward(theme_message.data, pixelblaze_hosts.clone()).await;
+                let hosts = &config.hosts();
+                let hosts = hosts.as_array().expect("need an array of hosts");
+
+                forward(hosts, theme_message.data).await;
             }
         }
     }

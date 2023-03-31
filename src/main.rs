@@ -28,6 +28,7 @@ struct Cli {
     )]
     topic: String,
 
+    // TODO: not required - remove
     #[arg(
         long("pixelblaze_host"),
         num_args(1..),

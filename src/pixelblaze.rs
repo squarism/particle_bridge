@@ -21,18 +21,11 @@ pub async fn forward(hosts: &[Value], message: ThemeMessage) {
 
         // TODO: better error messages
         let url = Url::parse(host).unwrap();
-        let themes = pixelblaze.get("themeIds").unwrap();
-        let theme_id = themes.get(&message.theme);
 
-        match theme_id {
-            Some(t) => {
-                let result = send_message(&url, t.as_str().unwrap(), message.clone()).await;
-                match result {
-                    Ok(_) => (),
-                    Err(_) => warn!("Could not send"),
-                }
-            }
-            None => warn!("I do not know what the theme `{}` is", message.theme),
+        let result = send_message(&url, pixelblaze, message.clone()).await;
+        match result {
+            Ok(_) => (),
+            Err(_) => warn!("Could not send"),
         }
     }
 }
@@ -40,15 +33,19 @@ pub async fn forward(hosts: &[Value], message: ThemeMessage) {
 // This function connects to the given URL and sends a message over the WebSocket.
 async fn send_message(
     url: &Url,
-    theme_id: &str,
+    pixelblaze: &Value,
     message: ThemeMessage,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let (ws_stream, _) = tokio_tungstenite::connect_async(url).await?;
     let (mut write, mut read) = ws_stream.split();
 
-    let pb_request = theme(message, theme_id);
+    let pixelblaze_message = theme(message.clone(), pixelblaze);
+    dbg!(&pixelblaze_message);
 
-    write.send(Message::Text(pb_request)).await?;
+    match pixelblaze_message {
+        Some(m) => write.send(Message::Text(m)).await?,
+        None => warn!("I do not know what the theme `{}` is", message.theme),
+    }
 
     while let Some(msg) = read.next().await {
         match msg {
@@ -68,12 +65,12 @@ async fn send_message(
     Ok(())
 }
 
-fn theme(message: ThemeMessage, theme_id: &str) -> String {
+fn theme(message: ThemeMessage, pixelblaze: &Value) -> Option<String> {
     match message {
         ThemeMessage {
             ref theme,
             brightness: None,
-        } if theme == "off" => r#"{ "brightness": 0.0 }"#.to_owned() + "\n",
+        } if theme == "off" => Some(r#"{ "brightness": 0.0 }"#.to_owned() + "\n"),
 
         // the physical ambience node control sends 0 with "off"
         // because of C :(
@@ -82,26 +79,33 @@ fn theme(message: ThemeMessage, theme_id: &str) -> String {
         ThemeMessage {
             ref theme,
             brightness: Some(0),
-        } if theme == "off" => r#"{ "brightness": 0.0 }"#.to_owned() + "\n",
+        } if theme == "off" => Some(r#"{ "brightness": 0.0 }"#.to_owned() + "\n"),
 
         ThemeMessage {
             theme,
             brightness: Some(brightness),
         } => {
-            // clamp brightness down, pixelblaze strip is brighter
-            let brightness = round(brightness as f32 / 255.0, 3) * 0.80;
+            let themes = pixelblaze.get("themeIds").unwrap();
+            let theme_id = themes.get(&theme);
 
-            // look up the config and populate the template with variables
-            let c = Config::new("config.json.tera".to_owned());
-            let result = c.theme_definition(theme, brightness, theme_id.to_owned());
+            match theme_id {
+                Some(id) => {
+                    // clamp brightness down, pixelblaze strip is brighter
+                    let brightness = round(brightness as f32 / 255.0, 3) * 0.80;
 
-            result.to_string()
+                    let c = Config::new("config.json.tera".to_owned());
+
+                    // look up the config and populate the template with variables
+                    let theme_definition = c
+                        .theme_definition(theme.clone(), brightness, id.to_string())
+                        .to_string();
+                    Some(theme_definition)
+                }
+                None => None,
+            }
         }
 
-        _ => {
-            println!("something else");
-            "".to_owned()
-        }
+        _ => None,
     }
 }
 

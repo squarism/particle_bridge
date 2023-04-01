@@ -16,7 +16,7 @@ impl Config {
         Self { config_file }
     }
 
-    pub fn theme_definition(&self, theme: String, brightness: f32, id: String) -> Value {
+    pub fn theme_definition(&self, theme: String, brightness: f32, id: &str) -> Value {
         let mut context = Context::new();
         context.insert("brightness", &brightness);
         context.insert("id", &id);
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn test_theme_definition() {
         let c = Config::new("fixtures/config.json.tera".to_owned());
-        let result = c.theme_definition("bluegreen".to_owned(), 0.42, "some-id".to_owned());
+        let result = c.theme_definition("bluegreen".to_owned(), 0.42, "some-id");
 
         let expected = json!({
             "brightness": 42,

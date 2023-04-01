@@ -64,6 +64,8 @@ async fn send_message(
     Ok(())
 }
 
+// TODO: sending the theme and brightness causes a flash
+// can we send the theme first and then set brightness?
 fn theme(message: ThemeMessage, pixelblaze: &Value) -> Option<String> {
     match message {
         ThemeMessage {
@@ -96,7 +98,7 @@ fn theme(message: ThemeMessage, pixelblaze: &Value) -> Option<String> {
 
                     // look up the config and populate the template with variables
                     let theme_definition = c
-                        .theme_definition(theme.clone(), brightness, id.to_string())
+                        .theme_definition(theme.clone(), brightness, id.as_str().unwrap())
                         .to_string();
                     Some(theme_definition)
                 }

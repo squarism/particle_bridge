@@ -2,6 +2,14 @@
 
 Subscribes to particle events and emits Pixelblaze events.  For syncing Pixelblaze nodes with a particle (arduino) controller.  Personally, to aid in the transition from a bunch of particle LED nodes to a more standard WLED-based system.
 
+> _sung to particle man by TMBG_ <br>
+> 
+> 🎶 Particle bridge, particle bridge <br>
+> Nobody wants, not even a smidge <br>
+> Niche and obtuse <br>
+> Personal use <br>
+> Nobody cares, particle bridge 🎶 <br>
+
 
 ## Setup
 

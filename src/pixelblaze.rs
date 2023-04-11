@@ -1,3 +1,4 @@
+use futures_util::future::join_all;
 use futures_util::SinkExt;
 use futures_util::StreamExt;
 use serde_json::Value;
@@ -11,7 +12,8 @@ use crate::particle::ThemeMessage;
 use log::warn;
 
 pub async fn forward(hosts: &[Value], message: ThemeMessage) {
-    for pixelblaze in hosts.iter() {
+    // capture futures with `.map` for parallel sending
+    let futures = hosts.iter().map(|pixelblaze| async {
         // TODO: this means that I need a config struct and not a bunch of serde JSON Values
         let host = pixelblaze
             .get("host")
@@ -19,20 +21,21 @@ pub async fn forward(hosts: &[Value], message: ThemeMessage) {
             .as_str()
             .unwrap();
 
-        // TODO: better error messages
+        // TODO: better error messages for URL parse, not just panic
         let url = Url::parse(host).unwrap();
+        send_message(url.clone(), pixelblaze, message.clone())
+            .await
+            .unwrap()
+    });
 
-        let result = send_message(&url, pixelblaze, message.clone()).await;
-        match result {
-            Ok(_) => (),
-            Err(_) => warn!("Could not send"),
-        }
-    }
+    // parallel sending so that all the pixelblazes switch at nearly the same time
+    // syncing multiple things is unsurprisingly a hard problem
+    join_all(futures).await;
 }
 
 // This function connects to the given URL and sends a message over the WebSocket.
 async fn send_message(
-    url: &Url,
+    url: Url,
     pixelblaze: &Value,
     message: ThemeMessage,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -47,12 +50,9 @@ async fn send_message(
     }
 
     while let Some(msg) = read.next().await {
-        match msg {
-            Err(e) => {
-                panic!("Error on client stream: {e:?}")
-            }
-            Ok(m) => m,
-        };
+        if let Err(e) = msg {
+            panic!("Error on client stream: {e:?}")
+        }
 
         // accept a message from the pixelblaze and close the socket?
         // if we don't do it this way (ie: ignore the message) then it

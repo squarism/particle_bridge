@@ -90,6 +90,19 @@ The ID is **in front** of the theme name, in this case, `THEidWEwant`.
 Pixelblazes are a list of hosts and the list of IDs of the themes. The assumption is that the pixelblazes have the same themes and want these to be sync'd up.  This bridge is _one particle event to many pixelblaze boards_.
 
 
+### ENV
+
+If you create a directory for this to run in under `/opt/particle_bridge`, then you need to create an `.env` file with these keys:
+
+```
+# particle access token
+# https://docs.particle.io/reference/cloud-apis/access-tokens/
+PARTICLE_TOKEN=<particle api token>
+```
+These ENVs could instead be set in the `particle_bridge.service` file.  See the included example in this repo.
+
+You can also set an environment variable `PARTICLE_LOG_LEVEL` in `.env` or otherwise. to be `info`, `warn` etc to see log messages.  Default is `warn`.
+
 
 ## License
 

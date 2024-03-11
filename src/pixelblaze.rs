@@ -51,7 +51,10 @@ async fn send_message(
 
     while let Some(msg) = read.next().await {
         if let Err(e) = msg {
-            panic!("Error on client stream: {e:?}")
+            warn!(
+                "{}",
+                format!("Problem sending message to pixelblaze: {e:?}")
+            );
         }
 
         // accept a message from the pixelblaze and close the socket?

@@ -1,6 +1,7 @@
 extern crate tera;
 
 use dotenv::dotenv;
+use env_logger::Env;
 
 use std::env;
 use std::io::Error;
@@ -31,7 +32,8 @@ struct Cli {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    env_logger::init();
+    let env = Env::default().filter_or("PARTICLE_LOG_LEVEL", "warn");
+    env_logger::init_from_env(env);
 
     dotenv().ok();
     let token =
